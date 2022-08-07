@@ -6,14 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import org.adaschool.dogslist.R
 import org.adaschool.dogslist.data.entity.Breed
 import org.adaschool.dogslist.databinding.FragmentDogListBinding
+import org.adaschool.dogslist.ui.activity.DogsListAdapter
 import org.adaschool.dogslist.ui.viewmodel.MainActivityViewModel
 
 @AndroidEntryPoint
-class DogsListFragment : Fragment() {
+class DogsListFragment : Fragment(), DogBreedClickListener {
 
     private var _binding: FragmentDogListBinding? = null
 
@@ -35,9 +37,17 @@ class DogsListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.navigateToDetailsFragment.setOnClickListener {
-            updateBreedInfoAndNavigateToDetailsFragment()
+
+        configureRecyclerView()
+    }
+
+    private fun configureRecyclerView() {
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        viewModel.liveDataDogsList.observe(viewLifecycleOwner) {
+                dogsList ->
+            binding.recyclerView.adapter = DogsListAdapter(dogsList)
         }
+
     }
 
     private fun updateBreedInfoAndNavigateToDetailsFragment() {
@@ -45,6 +55,10 @@ class DogsListFragment : Fragment() {
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container_view, DogBreedDetailsFragment())
             .addToBackStack("Details").commit()
+    }
+
+    override fun onDogBreedClicked(breed: Breed) {
+        viewModel.selectedBreed = breed
     }
 
 
